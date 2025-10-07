@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins_cd.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/07 16:40:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 16:52:52 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 18:53:32 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ int	builtin_cd(char **argv, t_shell *shell)
 	char	oldpwd[1024];
 	char	cwd[1024];
 
+	if (argv[1] && argv[2])
+		return (ms_error2("cd", "too many arguments"), 1);
 	getcwd(oldpwd, sizeof(oldpwd));
 	path = cd_select_target(argv, shell);
 	if (!path)

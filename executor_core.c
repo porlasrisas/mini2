@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_core.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 13:25:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 17:13:43 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 19:50:20 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,13 +59,6 @@ static void	wait_others(t_exec_ctx *s)
 	{
 		if (s->pids[s->k] > 0)
 			waitpid(s->pids[s->k], &s->status, 0);
-		if (s->k == 0 && WIFSIGNALED(s->status)
-			&& WTERMSIG(s->status) == SIGPIPE && s->cmd_arr[0]
-			&& !s->cmd_arr[0]->is_builtin)
-		{
-			write(2, " Broken pipe", 12);
-			write(2, "\n", 1);
-		}
 		s->k++;
 	}
 }

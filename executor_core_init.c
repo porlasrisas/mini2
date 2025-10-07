@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_core_init.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 13:50:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 16:46:34 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 18:49:26 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ static int	alloc_exec_arrays(t_exec_ctx *s)
 {
 	if (s->n > 1)
 	{
-		s->pfd = malloc(sizeof(int[2]) * (s->n - 1));
+		s->pfd = malloc(sizeof(int) * (s->n - 1));
 		if (!s->pfd)
 			return (ms_perror("malloc"), -1);
 	}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_direct.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 13:42:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 21:07:58 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 20:22:08 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ static void	stat_and_validate_path(const char *path)
 	}
 	if (S_ISDIR(st.st_mode))
 	{
-		ms_error2(path, "is a directory");
+		ms_error2(path, "Is a directory");
 		_exit(126);
 	}
 	if (access(path, X_OK) != 0)
@@ -61,4 +61,14 @@ void	exec_path_or_error(t_cmd *cmd, t_shell *shell)
 	stat_and_validate_path(path);
 	execve(path, cmd->argv, shell->envp);
 	handle_execve_error(path);
+}
+
+void	free_split(char **p)
+{
+	int	i;
+
+	i = 0;
+	while (p && p[i])
+		free(p[i++]);
+	free(p);
 }

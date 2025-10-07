@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   shell_loop_helpers.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 11:05:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 17:40:46 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 18:40:11 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,4 +71,3 @@ int	handle_input_result(t_shell *shell, t_loop_ctx *c)
 		return (1);
 	return (1);
 }
-

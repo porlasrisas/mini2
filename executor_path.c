@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_path.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 13:10:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 21:07:58 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 20:24:42 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,16 +28,6 @@ static char	*join_path(const char *dir, const char *base)
 	res[dl + 1] = '\0';
 	ft_strlcat(res, base, dl + bl + 2);
 	return (res);
-}
-
-static void	free_split(char **p)
-{
-	int	i;
-
-	i = 0;
-	while (p && p[i])
-		free(p[i++]);
-	free(p);
 }
 
 static int	attempt_exec(char *cand, t_cmd *cmd, t_shell *shell)
@@ -74,12 +64,27 @@ static int	loop_path_parts(char **parts, t_cmd *cmd, t_shell *shell)
 	return (127);
 }
 
+static void	handle_special_dot_commands(const char *cmd_name)
+{
+	if (ft_strlen(cmd_name) == 1 && cmd_name[0] == '.')
+	{
+		ms_error2(".", "filename argument required");
+		_exit(2);
+	}
+	if (ft_strlen(cmd_name) == 2 && cmd_name[0] == '.' && cmd_name[1] == '.')
+	{
+		ms_error2("..", "command not found");
+		_exit(127);
+	}
+}
+
 void	exec_search_in_path(t_cmd *cmd, t_shell *shell)
 {
 	char	*path;
 	char	**parts;
 	int		code;
 
+	handle_special_dot_commands(cmd->argv[0]);
 	path = get_env_var("PATH", shell->envp);
 	if (!path || path[0] == '\0')
 	{

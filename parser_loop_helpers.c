@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_loop_helpers.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 17:06:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 14:09:33 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 19:49:24 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,28 +31,30 @@ void	cleanup_parse_failure(char ***argv, t_cmd **cmds)
 int	process_token_and_append(t_parse_ctx *c, int *argc, char ***argv,
 		char **envp)
 {
-	char	*token;
-	char	*tok_dup;
-	int		should_expand;
-	char	*processed;
+	t_token_ctx	ctx;
 
-	token = parse_token(c->input, c->i);
-	if (!token || !*token)
+	ctx.token = parse_token(c->input, c->i);
+	if (!ctx.token || !*ctx.token)
 		return (1);
-	tok_dup = ft_strdup(token);
-	if (!tok_dup)
+	ctx.tok_dup = ft_strdup(ctx.token);
+	if (!ctx.tok_dup)
 		return (1);
-	should_expand = token_should_expand(token);
-	processed = process_token(tok_dup, envp, should_expand, c->last_status);
-	free(tok_dup);
-	if (!processed)
+	ctx.should_expand = token_should_expand(ctx.token);
+	ctx.processed = process_token(ctx.tok_dup, envp, ctx.should_expand,
+			c->last_status);
+	free(ctx.tok_dup);
+	if (!ctx.processed)
 		return (1);
-	if (processed[0] == '\0' && !*c->current_cmd && *argc == 0)
+	if (ctx.processed[0] == '\0' && !*c->current_cmd && *argc == 0)
 	{
-		free(processed);
-		return (1);
+		if (ft_strncmp(ctx.token, "\"\"", 3) != 0
+			&& ft_strncmp(ctx.token, "''", 3) != 0)
+		{
+			free(ctx.processed);
+			return (1);
+		}
 	}
-	append_or_start_cmd_ctx(c, argc, argv, processed);
+	append_or_start_cmd_ctx(c, argc, argv, ctx.processed);
 	return (1);
 }
 

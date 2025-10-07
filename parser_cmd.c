@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_cmd.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 17:48:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 16:52:52 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 18:36:28 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ t_cmd	*add_cmd(t_cmd *cmds, char **argv)
 	}
 	else
 		cmds = new;
-	if (new->argv &&new->argv[0] && is_builtin_name(new->argv[0]))
+	if (new->argv && new->argv[0] && is_builtin_name(new->argv[0]))
 		new->is_builtin = 1;
 	return (cmds);
 }

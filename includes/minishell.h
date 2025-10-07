@@ -3,15 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 12:50:40 by guigonza          #+#    #+#             */
-/*   Updated: 2025/10/07 17:35:16 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 20:21:35 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
+# define _POSIX_C_SOURCE 200809L
+# define _GNU_SOURCE
 
 # define MAX_TOKENS 100
 # define TOKENS_LEN 256
@@ -30,6 +33,7 @@
 # include <string.h>
 # include <sys/ioctl.h>
 # include <sys/stat.h>
+# include <sys/types.h>
 # include <sys/wait.h>
 # include <term.h>
 # include <termios.h>
@@ -119,6 +123,15 @@ typedef struct s_parse_ctx
 	int					last_status;
 }						t_parse_ctx;
 
+/* Token processing context */
+typedef struct s_token_ctx
+{
+	char				*token;
+	char				*tok_dup;
+	int					should_expand;
+	char				*processed;
+}						t_token_ctx;
+
 /* Parser expand context */
 typedef struct s_expand_ctx
 {
@@ -172,9 +185,9 @@ int						run_single_builtin(t_shell *shell, t_cmd *cmd,
 char					*read_input(t_shell *shell);
 int						handle_input_result(t_shell *shell, t_loop_ctx *c);
 void					process_line(t_shell *shell, t_loop_ctx *c);
-int				is_blank_str(const char *s);
-int				should_skip_single(t_cmd *cmd);
-void			exec_after_parsing(t_shell *shell, t_loop_ctx *c);
+int						is_blank_str(const char *s);
+int						should_skip_single(t_cmd *cmd);
+void					exec_after_parsing(t_shell *shell, t_loop_ctx *c);
 void					init_shell_state(t_shell *shell,
 							struct sigaction *sa_pipe, t_loop_ctx *c,
 							char **envp);
@@ -248,12 +261,12 @@ int						hd_process_list(t_cmd *cmd, t_shell *shell,
 							int *assigned_fd);
 int						read_heredoc_into_pipe(int wfd, const char *delim,
 							int no_expand, t_shell *shell);
-void						hd_pick_source(t_hdoc *node, t_cmd *cmd, const char **delim,
-							int info[2]);
+void					hd_pick_source(t_hdoc *node, t_cmd *cmd,
+							const char **delim, int info[2]);
 
 /* Executor core orchestration */
-int					init_ctx(t_exec_ctx *s, t_cmd *cmds);
-void				fork_children(t_exec_ctx *s, t_shell *shell);
+int						init_ctx(t_exec_ctx *s, t_cmd *cmds);
+void					fork_children(t_exec_ctx *s, t_shell *shell);
 
 /* Error helpers */
 void					ms_perror(const char *subject);
@@ -266,6 +279,7 @@ void					restore_terminal(void);
 
 /* IO helpers */
 char					*ms_read_line_fd(int fd);
+void					free_split(char **p);
 
 /* noop: mantenido por compatibilidad de includes */
 

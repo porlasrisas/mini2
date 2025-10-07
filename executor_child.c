@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_child.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 12:32:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 17:14:52 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 19:49:03 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,14 @@ void	exec_command_child(t_cmd *cmd, t_shell *shell, int in_pipeline)
 	apply_redirs_child(cmd, shell);
 	if (cmd->skip_execution)
 		_exit(1);
-	if (!cmd->argv || !cmd->argv[0])
-		_exit(0);
+	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
+	{
+		if (cmd->argv && cmd->argv[0] && cmd->argv[0][0] == '\0')
+		{
+			ft_putstr_fd("'': command not found\n", 2);
+		}
+		_exit(127);
+	}
 	if (cmd->is_builtin)
 		exec_builtin_in_child(cmd, shell);
 	else if (ft_strchr(cmd->argv[0], '/'))
