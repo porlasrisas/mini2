@@ -1,0 +1,111 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   executor_core.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/30 13:25:00 by Guille            #+#    #+#             */
+/*   Updated: 2025/10/07 17:13:43 by Guille           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "includes/minishell.h"
+#include <signal.h>
+
+static void	close_all_pipes(int n, int (*pfd)[2])
+{
+	int	j;
+
+	j = 0;
+	while (j < n - 1)
+	{
+		if (pfd[j][0] >= 0)
+			close(pfd[j][0]);
+		if (pfd[j][1] >= 0)
+			close(pfd[j][1]);
+		j++;
+	}
+}
+
+static int	setup_pipes(t_exec_ctx *s)
+{
+	int	i;
+
+	if (s->n <= 1)
+		return (1);
+	i = 0;
+	while (i < s->n - 1)
+	{
+		if (pipe(s->pfd[i]) == -1)
+		{
+			ms_perror("pipe");
+			while (i-- > 0)
+			{
+				close(s->pfd[i][0]);
+				close(s->pfd[i][1]);
+			}
+			return (0);
+		}
+		i++;
+	}
+	return (1);
+}
+
+static void	wait_others(t_exec_ctx *s)
+{
+	s->k = 0;
+	while (s->k < s->n - 1)
+	{
+		if (s->pids[s->k] > 0)
+			waitpid(s->pids[s->k], &s->status, 0);
+		if (s->k == 0 && WIFSIGNALED(s->status)
+			&& WTERMSIG(s->status) == SIGPIPE && s->cmd_arr[0]
+			&& !s->cmd_arr[0]->is_builtin)
+		{
+			write(2, " Broken pipe", 12);
+			write(2, "\n", 1);
+		}
+		s->k++;
+	}
+}
+
+static int	wait_and_finalize(t_exec_ctx *s, t_shell *shell)
+{
+	if (s->n > 1)
+		close_all_pipes(s->n, s->pfd);
+	if (s->pids[s->n - 1] > 0)
+		waitpid(s->pids[s->n - 1], &s->last_status, 0);
+	wait_others(s);
+	sigaction(SIGINT, &s->old_int, NULL);
+	if (WIFEXITED(s->last_status))
+		shell->last_status = WEXITSTATUS(s->last_status);
+	else if (WIFSIGNALED(s->last_status))
+		shell->last_status = 128 + WTERMSIG(s->last_status);
+	else
+		shell->last_status = 1;
+	return (shell->last_status);
+}
+
+int	executor_run(t_cmd *cmds, t_shell *shell)
+{
+	t_exec_ctx	s;
+	int			res;
+
+	res = init_ctx(&s, cmds);
+	if (res <= 0)
+		return (res < 0);
+	if (!setup_pipes(&s))
+	{
+		free(s.pids);
+		free(s.pfd);
+		free(s.cmd_arr);
+		return (1);
+	}
+	fork_children(&s, shell);
+	res = wait_and_finalize(&s, shell);
+	free(s.pids);
+	free(s.pfd);
+	free(s.cmd_arr);
+	return (res);
+}

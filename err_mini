@@ -1,0 +1,5 @@
+minishell: export: `A-': not a valid identifier
+minishell: export: `HELLO-': not a valid identifier
+minishell: export: `': not a valid identifier
+minishell: export: `123': not a valid identifier
+minishell: 123123: No such file or directory
