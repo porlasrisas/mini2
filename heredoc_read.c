@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc_read.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 13:35:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 15:07:34 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 19:33:19 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,13 @@ int	read_heredoc_into_pipe(int wfd, const char *delim, int no_expand,
 {
 	char	*line;
 
+	if (!delim)
+		return (0);
 	while (1)
 	{
 		line = hd_read_prompt();
+		if (!line)
+			break ;
 		if (g_signal == SIGINT)
 		{
 			free(line);

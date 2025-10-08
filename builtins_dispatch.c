@@ -54,6 +54,7 @@ static void	perform_exit_and_quit(t_shell *shell, t_cmd *cmd, int save_in,
 		ft_putstr_fd("exit\n", 1);
 	restore_terminal();
 	free_env(shell->envp);
+	close_extra_fds();
 	exit(exit_code);
 }
 

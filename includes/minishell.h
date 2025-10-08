@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 12:50:40 by guigonza          #+#    #+#             */
-/*   Updated: 2025/10/08 19:07:18 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 19:29:25 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,7 @@ int						shell_loop(char **envp);
 void					dup_io_for_child(t_exec_ctx *s);
 void					close_unused_fds(t_exec_ctx *s);
 void					free_env(char **envp);
+void					close_extra_fds(void);
 
 t_cmd					*parse_input(char *input, char **envp, int last_status);
 t_cmd					*parse_build(char *input, char **envp, int last_status);

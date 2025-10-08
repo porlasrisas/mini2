@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 11:27:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/08 19:08:11 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 19:28:43 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ int	handle_dollar(const char *token, int *i, char **envp, size_t status_len)
 		return (add);
 	}
 }
+
 void	free_env(char **envp)
 {
 	int	i;

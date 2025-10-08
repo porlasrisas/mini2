@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/07 21:44:02 by guigonza          #+#    #+#             */
-/*   Updated: 2025/10/08 18:32:17 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 20:16:52 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,23 @@ void	setup_signals(void)
 	sigaction(SIGQUIT, &sa_quit, NULL);
 }
 
+static void	cleanup_pipes_on_error(t_exec_ctx *s, int i)
+{
+	while (i-- > 0)
+	{
+		if (s->pfd[i][0] >= 0)
+		{
+			close(s->pfd[i][0]);
+			s->pfd[i][0] = -1;
+		}
+		if (s->pfd[i][1] >= 0)
+		{
+			close(s->pfd[i][1]);
+			s->pfd[i][1] = -1;
+		}
+	}
+}
+
 int	setup_pipes(t_exec_ctx *s)
 {
 	int	i;
@@ -64,19 +81,7 @@ int	setup_pipes(t_exec_ctx *s)
 		if (pipe(s->pfd[i]) == -1)
 		{
 			ms_perror("pipe");
-			while (i-- > 0)
-			{
-				if (s->pfd[i][0] >= 0)
-				{
-					close(s->pfd[i][0]);
-					s->pfd[i][0] = -1;
-				}
-				if (s->pfd[i][1] >= 0)
-				{
-					close(s->pfd[i][1]);
-					s->pfd[i][1] = -1;
-				}
-			}
+			cleanup_pipes_on_error(s, i);
 			return (0);
 		}
 		i++;

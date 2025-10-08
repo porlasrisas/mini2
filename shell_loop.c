@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/07 22:30:00 by guigonza          #+#    #+#             */
-/*   Updated: 2025/10/08 19:07:18 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 19:29:25 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ int	shell_loop(char **envp)
 	}
 	restore_terminal();
 	free_env(shell.envp);
+	close_extra_fds();
 	return (shell.last_status);
 }
 

@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/08 14:20:30 by guigonza          #+#    #+#             */
-/*   Updated: 2025/10/08 19:07:18 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 19:27:58 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,6 @@ void	process_line(t_shell *shell, t_loop_ctx *c)
 	shell->parser.cmds = parse_input(c->input, shell->envp, shell->last_status);
 	if (!shell->parser.cmds)
 		return (free(c->input), (void)0);
-	/* Liberamos el buffer de entrada inmediatamente tras parsear
-	 * para evitar fugas si un builtin como 'exit' termina el proceso
-	 * antes de alcanzar el free() al final de la función. */
 	free(c->input);
 	c->input = NULL;
 	if (!shell->parser.cmds->next && shell->parser.cmds->redir.has_redir_in

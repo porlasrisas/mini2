@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 17:06:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/08 18:16:39 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 19:25:59 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,11 @@ void	cleanup_parse_failure(char ***argv, t_cmd **cmds)
 			free((*argv)[i++]);
 		free(*argv);
 	}
-	free_cmds(*cmds);
+	if (cmds && *cmds)
+	{
+		free_cmds(*cmds);
+		*cmds = NULL;
+	}
 }
 
 int	process_token_and_append(t_parse_ctx *c, int *argc, char ***argv,

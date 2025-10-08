@@ -6,11 +6,46 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/29 11:05:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/08 18:32:17 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 20:06:27 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
+
+static int	alloc_pipes_array(t_exec_ctx *s)
+{
+	int	i;
+
+	if (s->n <= 1)
+		return (0);
+	s->pfd = malloc(sizeof(*s->pfd) * (s->n - 1));
+	if (!s->pfd)
+		return (ms_perror("malloc"), -1);
+	i = 0;
+	while (i < s->n - 1)
+	{
+		s->pfd[i][0] = -1;
+		s->pfd[i][1] = -1;
+		i++;
+	}
+	return (0);
+}
+
+static int	alloc_pids_array(t_exec_ctx *s)
+{
+	int	i;
+
+	s->pids = malloc(sizeof(pid_t) * s->n);
+	if (!s->pids)
+		return (ms_perror("malloc"), -1);
+	i = 0;
+	while (i < s->n)
+	{
+		s->pids[i] = -1;
+		i++;
+	}
+	return (0);
+}
 
 void	ms_perror(const char *subject)
 {
@@ -58,35 +93,12 @@ int	count_cmds(t_cmd *cmd)
 
 int	alloc_exec_arrays(t_exec_ctx *s)
 {
-	int i;
-
-	if (s->n > 1)
-	{
-		/* allocate (n-1) pipes, each with 2 ints */
-		s->pfd = malloc(sizeof(int[2]) * (s->n - 1));
-		if (!s->pfd)
-			return (ms_perror("malloc"), -1);
-		/* init to -1 to simplify safe-closing */
-		i = 0;
-		while (i < s->n - 1)
-		{
-			s->pfd[i][0] = -1;
-			s->pfd[i][1] = -1;
-			i++;
-		}
-	}
-	s->pids = malloc(sizeof(pid_t) * s->n);
-	if (!s->pids)
+	if (alloc_pipes_array(s) < 0)
+		return (-1);
+	if (alloc_pids_array(s) < 0)
 	{
 		free(s->pfd);
-		return (ms_perror("malloc"), -1);
-	}
-	/* init pids to -1 */
-	i = 0;
-	while (i < s->n)
-	{
-		s->pids[i] = -1;
-		i++;
+		return (-1);
 	}
 	s->cmd_arr = malloc(sizeof(t_cmd *) * s->n);
 	if (!s->cmd_arr)

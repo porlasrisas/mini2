@@ -6,17 +6,49 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 12:55:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/08 18:07:04 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 20:22:26 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
 
-/* forward static prototypes to avoid implicit declarations (C99, -Werror) */
-static int	hd_fail_cleanup(int *assigned_fd, int new_rfd, t_cmd *cmd);
-static int	hd_create_and_fill(const char *delim, int no_expand,
-				t_shell *shell, int pipefd[2]);
+/* forward static prototypes */
+static int			hd_parent_wait(pid_t pid, int pipefd[2]);
+static int			hd_fail_cleanup(int *assigned_fd, int new_rfd, t_cmd *cmd);
+static int			hd_handle_child_status(int status, int rfd);
+static int			hd_update_assigned(int *assigned_fd, int rfd, int is_last);
 
+static int	hd_create_and_fill(const char *delim, int no_expand, t_shell *shell,
+		int pipefd[2])
+{
+	pid_t	pid;
+
+	if (pipe(pipefd) == -1)
+		return (ms_perror("pipe"), 0);
+	pid = fork();
+	if (pid < 0)
+	{
+		ms_perror("fork");
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return (0);
+	}
+	if (pid == 0)
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		signal(SIGPIPE, SIG_DFL);
+		close(pipefd[0]);
+		if (!read_heredoc_into_pipe(pipefd[1], delim, no_expand, shell))
+		{
+			close(pipefd[1]);
+			_exit(130);
+		}
+		close(pipefd[1]);
+		_exit(0);
+	}
+	return (hd_parent_wait(pid, pipefd));
+}
 int	hd_process_list(t_cmd *cmd, t_shell *shell, int *assigned_fd)
 {
 	t_hdoc		*node;
@@ -30,14 +62,7 @@ int	hd_process_list(t_cmd *cmd, t_shell *shell, int *assigned_fd)
 		hd_pick_source(node, cmd, &delim, info);
 		if (!hd_create_and_fill(delim, info[0], shell, pipefd))
 			return (hd_fail_cleanup(assigned_fd, -1, cmd));
-		if (info[1])
-		{
-			if (*assigned_fd != -1)
-				close(*assigned_fd);
-			*assigned_fd = pipefd[0];
-		}
-		else
-			close(pipefd[0]);
+	hd_update_assigned(assigned_fd, pipefd[0], info[1]);
 		if (!node || !node->next)
 			break ;
 		node = node->next;
@@ -96,30 +121,16 @@ static int	hd_parent_wait(pid_t pid, int pipefd[2])
 	return (hd_handle_child_status(status, pipefd[0]));
 }
 
-static int	hd_create_and_fill(const char *delim, int no_expand, t_shell *shell,
-		int pipefd[2])
+static int	hd_update_assigned(int *assigned_fd, int rfd, int is_last)
 {
-	pid_t	pid;
-
-	if (pipe(pipefd) == -1)
-		return (ms_perror("pipe"), 0);
-	pid = fork();
-	if (pid < 0)
+	if (is_last)
 	{
-		ms_perror("fork");
-		close(pipefd[0]);
-		close(pipefd[1]);
-		return (0);
+		if (*assigned_fd != -1)
+			close(*assigned_fd);
+		*assigned_fd = rfd;
 	}
-	if (pid == 0)
-	{
-		signal(SIGINT, SIG_DFL);
-		signal(SIGQUIT, SIG_DFL);
-		signal(SIGPIPE, SIG_DFL);
-		close(pipefd[0]);
-		if (!read_heredoc_into_pipe(pipefd[1], delim, no_expand, shell))
-			_exit(130);
-		_exit(0);
-	}
-	return (hd_parent_wait(pid, pipefd));
+	else
+		close(rfd);
+	return (1);
 }
+
