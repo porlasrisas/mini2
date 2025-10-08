@@ -3,16 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redir_utils_parse.c                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 23:08:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 16:33:43 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 18:04:00 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
-
-char		*remove_quotes_preserving_expand(char *token, int *expand_out);
 
 static int	consume_spaces_and_check_eol(t_parse_ctx *c, int *parse_error)
 {

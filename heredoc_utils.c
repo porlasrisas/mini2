@@ -3,26 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 12:55:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 16:23:20 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 18:07:04 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
 
+/* forward static prototypes to avoid implicit declarations (C99, -Werror) */
 static int	hd_fail_cleanup(int *assigned_fd, int new_rfd, t_cmd *cmd);
-static int	hd_create_and_fill(const char *delim, int no_expand, t_shell *shell,
-				int pipefd[2]);
-
-/* forward decl: implemented in heredoc_read.c */
-void		hd_pick_source(t_hdoc *node, t_cmd *cmd, const char **delim,
-				int info[2]);
-
-/* prompt y lectura movidos a heredoc_read.c; hd_pick_source también */
-
-/* lectura principal movida a heredoc_read.c */
+static int	hd_create_and_fill(const char *delim, int no_expand,
+				t_shell *shell, int pipefd[2]);
 
 int	hd_process_list(t_cmd *cmd, t_shell *shell, int *assigned_fd)
 {

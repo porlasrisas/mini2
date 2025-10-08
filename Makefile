@@ -23,53 +23,42 @@ INCLUDES    = -I. -Iincludes -I$(SRC_DIR) -I$(LIBFT_DIR)
 # Archivos fuente listados explícitamente
 
 SRC = \
+	builtins_advanced.c \
+	builtins_basic.c \
+	builtins_cd.c \
+	builtins_dispatch.c \
+	builtins_export.c \
+	env.c \
+	env_utils.c \
+	env_utils_remove.c \
+	error_utils.c \
+	executor.c \
+	executor_direct.c \
+	executor_main.c \
+	executor_path.c \
+	export_utils.c \
+	free_cmds.c \
+	heredoc.c \
+	heredoc_read.c \
+	heredoc_utils.c \
+	io_utils.c \
 	main.c \
-	shell_loop.c \
-	parser.c \
 	parser_build.c \
-	parser_build_loop.c \
-	parser_pipe_checks.c \
+	parser.c \
+	parser_core.c \
+	parser_expand.c \
 	parser_loop_helpers.c \
-	parser_expand_vars.c \
-	parser_expand_calc.c \
-	parser_expand_build.c \
-	parser_expand_quotes.c \
+	parser_pipe_checks.c \
 	parser_redir.c \
 	parser_redir_utils_io.c \
 	parser_redir_utils_parse.c \
 	parser_tokens.c \
-	parser_cmd.c \
-	parser_core.c \
 	parser_utils.c \
-	executor.c \
-	executor_core.c \
-	executor_core_fork.c \
-	executor_core_init.c \
-	heredoc.c \
-	heredoc_utils.c \
-	heredoc_read.c \
-	executor_child.c \
-	executor_direct.c \
-	executor_path.c \
-	error_utils.c \
-	terminal.c \
 	read_input.c \
-	shell_loop_helpers.c \
+	shell_loop.c \
 	shell_loop_exec.c \
-	builtins_dispatch.c \
-	shell_init_process.c \
-	builtins_io.c \
-	builtins_cd.c \
-	builtin_export.c \
-	export_utils.c \
-	builtin_unset.c \
-	builtins.c \
 	signals.c \
-	free_cmds.c \
-	env.c \
-	env_utils.c \
-	env_utils_remove.c \
-	io_utils.c
+	terminal.c
 
 
 

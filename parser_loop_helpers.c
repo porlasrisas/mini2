@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 17:06:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 19:49:24 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 18:16:39 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,15 @@ int	skip_spaces(t_parse_ctx *c)
 
 void	cleanup_parse_failure(char ***argv, t_cmd **cmds)
 {
+	int	i;
+
 	if (argv && *argv)
+	{
+		i = 0;
+		while ((*argv)[i])
+			free((*argv)[i++]);
 		free(*argv);
+	}
 	free_cmds(*cmds);
 }
 

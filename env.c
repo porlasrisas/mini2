@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 13:55:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 18:00:23 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 19:17:44 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,5 +97,3 @@ int	env_unset(char ***envp, const char *name)
 		return (0);
 	return (env_remove_at(envp, idx));
 }
-
-/* print is provided by export_utils.c: print_export_sorted */

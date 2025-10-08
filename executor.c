@@ -3,52 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   executor.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/24 14:25:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 19:56:43 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 21:29:50 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
 
 /* redirecciones en el padre (builtins) */
-static void	apply_parent_out(t_cmd *cmd, int *ok)
-{
-	if (cmd->redir.out_fd != -1)
-	{
-		if (dup2(cmd->redir.out_fd, STDOUT_FILENO) == -1)
-			*ok = 0;
-		close(cmd->redir.out_fd);
-		cmd->redir.out_fd = -1;
-	}
-	if (cmd->redir.append_fd != -1)
-	{
-		if (dup2(cmd->redir.append_fd, STDOUT_FILENO) == -1)
-			*ok = 0;
-		close(cmd->redir.append_fd);
-		cmd->redir.append_fd = -1;
-	}
-}
-
-static void	apply_parent_in(t_cmd *cmd, int *ok)
-{
-	if (cmd->redir.in_fd != -1)
-	{
-		if (dup2(cmd->redir.in_fd, STDIN_FILENO) == -1)
-			*ok = 0;
-		close(cmd->redir.in_fd);
-		cmd->redir.in_fd = -1;
-	}
-	if (cmd->redir.heredoc_fd >= 0)
-	{
-		if (dup2(cmd->redir.heredoc_fd, STDIN_FILENO) == -1)
-			*ok = 0;
-		close(cmd->redir.heredoc_fd);
-		cmd->redir.heredoc_fd = -1;
-	}
-}
-
 int	apply_redirs_parent(t_cmd *cmd, int *save_stdin, int *save_stdout)
 {
 	int	ok;
@@ -86,7 +50,33 @@ void	restore_redirs_parent(int save_stdin, int save_stdout, t_cmd *cmd)
 	(void)cmd;
 }
 
-/* orquestaión delegada a executor_core.c */
+static void	fill_cmd_array(t_exec_ctx *s, t_cmd *cmds)
+{
+	s->cur = cmds;
+	s->i = 0;
+	while (s->i < s->n)
+	{
+		s->cmd_arr[s->i] = s->cur;
+		s->cur = s->cur->next;
+		s->i++;
+	}
+}
+
+int	init_ctx(t_exec_ctx *s, t_cmd *cmds)
+{
+	s->n = count_cmds(cmds);
+	if (s->n == 0)
+		return (0);
+	s->pfd = NULL;
+	s->pids = NULL;
+	s->cmd_arr = NULL;
+	if (alloc_exec_arrays(s) != 0)
+		return (-1);
+	fill_cmd_array(s, cmds);
+	return (1);
+}
+
+/* orquestación delegada a executor_main.c */
 int			executor_run(t_cmd *cmds, t_shell *shell);
 
 int	execute_cmds(t_cmd *cmds, t_shell *shell)

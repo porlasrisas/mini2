@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_pipe_checks.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 17:05:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/09/30 19:11:45 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 21:01:14 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,4 +45,38 @@ int	pipe_postcheck(t_parse_ctx *c, char ***argv)
 		return (0);
 	}
 	return (1);
+}
+
+void	copy_single_quoted(const char *t, int *i, char *dst, int *j)
+{
+	char	q;
+
+	q = '\'';
+	(*i)++;
+	while (t[*i] && t[*i] != q)
+		dst[(*j)++] = t[(*i)++];
+	if (t[*i] == q)
+		(*i)++;
+}
+
+void	copy_double_quoted(const char *t, int *i, t_expand_ctx *x,
+		int *expand_out)
+{
+	char	q;
+
+	q = '"';
+	(*i)++;
+	while (t[*i] && t[*i] != q)
+	{
+		if (t[*i] == '$' && expand_out)
+			*expand_out = 1;
+		x->dst[x->j++] = t[(*i)++];
+	}
+	if (t[*i] == q)
+		(*i)++;
+}
+
+void	copy_unquoted(const char *t, int *i, char *dst, int *j)
+{
+	dst[(*j)++] = t[(*i)++];
 }

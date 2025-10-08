@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/24 18:05:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 18:46:30 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 14:21:13 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,3 +72,33 @@ void	mark_non_pipeline_skips(t_cmd *cmds)
 }
 
 /* parse_token is now in parser_tokens.c */
+
+/* From parser_build_loop.c */
+
+int	parse_main_loop(t_parse_ctx *c, int *argc, char ***argv, char **envp)
+{
+	int	st;
+
+	while (c->input[*c->i])
+	{
+		st = loop_iteration(c, argc, argv, envp);
+		if (st == 0)
+		{
+			cleanup_parse_failure(argv, c->cmds);
+			return (0);
+		}
+		if (!skip_spaces(c))
+			break ;
+	}
+	return (1);
+}
+
+int	is_blank_str(const char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s && (s[i] == ' ' || s[i] == '\t'))
+		i++;
+	return (s && s[i] == '\0');
+}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 12:30:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 14:08:52 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/07 21:29:50 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,4 +63,40 @@ void	preprocess_heredocs(t_cmd *cmds, t_shell *shell)
 		cur = cur->next;
 	}
 	shell->in_heredoc = 0;
+}
+
+void	apply_parent_out(t_cmd *cmd, int *ok)
+{
+	if (cmd->redir.out_fd != -1)
+	{
+		if (dup2(cmd->redir.out_fd, STDOUT_FILENO) == -1)
+			*ok = 0;
+		close(cmd->redir.out_fd);
+		cmd->redir.out_fd = -1;
+	}
+	if (cmd->redir.append_fd != -1)
+	{
+		if (dup2(cmd->redir.append_fd, STDOUT_FILENO) == -1)
+			*ok = 0;
+		close(cmd->redir.append_fd);
+		cmd->redir.append_fd = -1;
+	}
+}
+
+void	apply_parent_in(t_cmd *cmd, int *ok)
+{
+	if (cmd->redir.in_fd != -1)
+	{
+		if (dup2(cmd->redir.in_fd, STDIN_FILENO) == -1)
+			*ok = 0;
+		close(cmd->redir.in_fd);
+		cmd->redir.in_fd = -1;
+	}
+	if (cmd->redir.heredoc_fd >= 0)
+	{
+		if (dup2(cmd->redir.heredoc_fd, STDIN_FILENO) == -1)
+			*ok = 0;
+		close(cmd->redir.heredoc_fd);
+		cmd->redir.heredoc_fd = -1;
+	}
 }

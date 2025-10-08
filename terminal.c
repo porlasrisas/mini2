@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <termios.h>
-#include <unistd.h>
+#include "includes/minishell.h"
 
 #ifdef ECHOCTL
 
@@ -29,23 +28,22 @@ static void	unset_echoctl_flag(struct termios *t)
 
 static int	termios_keeper(int op, struct termios *io)
 {
-	static struct termios	orig;
-	static int				saved;
+	static t_term_state	st;
 
 	if (op == 1)
 	{
-		orig = *io;
-		saved = 1;
+		st.orig = *io;
+		st.saved = 1;
 		return (1);
 	}
 	if (op == 2)
 	{
-		if (!saved)
+		if (!st.saved)
 			return (0);
-		*io = orig;
+		*io = st.orig;
 		return (1);
 	}
-	return (saved);
+	return (st.saved);
 }
 
 void	configure_terminal(void)

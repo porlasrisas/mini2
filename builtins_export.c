@@ -1,46 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   builtin_export.c                                   :+:      :+:    :+:   */
+/*   builtins_export.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/25 23:00:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/09/30 00:41:35 by Guille           ###   ########.fr       */
+/*   Created: 2025/10/07 21:30:00 by guigonza          #+#    #+#             */
+/*   Updated: 2025/10/07 20:40:31 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
-
-static int	is_valid_identifier(char *str)
-{
-	int	i;
-
-	if (!str || !*str || (!ft_isalpha(*str) && *str != '_'))
-		return (0);
-	i = 1;
-	while (str[i])
-	{
-		if (!ft_isalnum(str[i]) && str[i] != '_')
-			return (0);
-		i++;
-	}
-	return (1);
-}
-
-static void	print_not_valid(const char *name)
-{
-	ft_putstr_fd("minishell: export: `", 2);
-	ft_putstr_fd((char *)name, 2);
-	ft_putstr_fd("': not a valid identifier\n", 2);
-}
 
 static int	export_with_equal(char *name, char *eq, t_shell *shell)
 {
 	*eq = '\0';
 	if (!is_valid_identifier(name))
 	{
-		print_not_valid(name);
+		print_not_valid_export(name);
 		*eq = '=';
 		return (1);
 	}
@@ -58,14 +35,12 @@ static int	export_variable(char *arg, t_shell *shell)
 		return (export_with_equal(arg, eq, shell));
 	if (!is_valid_identifier(arg))
 	{
-		print_not_valid(arg);
+		print_not_valid_export(arg);
 		return (1);
 	}
 	env_set(&shell->envp, arg, "");
 	return (0);
 }
-
-/* print_export_sorted moved to export_utils.c */
 
 int	builtin_export(char **argv, t_shell *shell)
 {
@@ -83,6 +58,29 @@ int	builtin_export(char **argv, t_shell *shell)
 	{
 		if (export_variable(argv[i], shell) != 0)
 			status = 1;
+		i++;
+	}
+	return (status);
+}
+
+int	builtin_unset(char **argv, t_shell *shell)
+{
+	int	i;
+	int	status;
+
+	i = 1;
+	status = 0;
+	while (argv[i])
+	{
+		if (!is_valid_identifier(argv[i]))
+		{
+			ft_putstr_fd("minishell: unset: `", 2);
+			ft_putstr_fd(argv[i], 2);
+			ft_putstr_fd("': not a valid identifier\n", 2);
+			status = 1;
+		}
+		else
+			env_unset(&shell->envp, argv[i]);
 		i++;
 	}
 	return (status);

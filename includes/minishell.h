@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 12:50:40 by guigonza          #+#    #+#             */
-/*   Updated: 2025/10/07 20:21:35 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 19:07:18 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,12 +145,31 @@ typedef struct s_expand_ctx
 /* Signal handling */
 void					sig_handler(int signo);
 void					setup_signals(void);
+int						setup_pipes(t_exec_ctx *s);
+void					wait_others(t_exec_ctx *s);
+int						wait_and_finalize(t_exec_ctx *s, t_shell *shell);
 
 /* Core shell functions */
 int						shell_loop(char **envp);
+void					dup_io_for_child(t_exec_ctx *s);
+void					close_unused_fds(t_exec_ctx *s);
+void					free_env(char **envp);
 
 t_cmd					*parse_input(char *input, char **envp, int last_status);
 t_cmd					*parse_build(char *input, char **envp, int last_status);
+int						read_var_end(const char *token, int i);
+void					expand_status(t_expand_ctx *ctx);
+void					expand_named_var(const char *token, int *i,
+							t_expand_ctx *ctx);
+int						handle_dollar(const char *token, int *i, char **envp,
+							size_t status_len);
+void					advance_or_count(const char *token, int *i, int *len);
+void					copy_single_quoted(const char *t, int *i, char *dst,
+							int *j);
+void					copy_double_quoted(const char *t, int *i,
+							t_expand_ctx *x, int *expand_out);
+void					copy_unquoted(const char *t, int *i, char *dst, int *j);
+int						len_for_var(const char *token, int i, char **envp);
 int						execute_cmds(t_cmd *cmds, t_shell *shell);
 void					free_cmds(t_cmd *cmds);
 
@@ -178,6 +197,8 @@ int						builtin_unset(char **argv, t_shell *shell);
 int						builtin_env(char **envp);
 int						builtin_exit(char **argv, int last_status);
 void					print_export_sorted(char **envp);
+int						is_valid_identifier(char *str);
+void					print_not_valid_export(const char *name);
 
 /* Shell loop helpers */
 int						run_single_builtin(t_shell *shell, t_cmd *cmd,
@@ -191,6 +212,7 @@ void					exec_after_parsing(t_shell *shell, t_loop_ctx *c);
 void					init_shell_state(t_shell *shell,
 							struct sigaction *sa_pipe, t_loop_ctx *c,
 							char **envp);
+int						handle_blank_input(t_loop_ctx *c);
 
 /* t_parse_ctx already defined */
 
@@ -206,6 +228,7 @@ char					*remove_quotes_preserving_expand(char *token,
 t_cmd					*add_cmd(t_cmd *cmds, char **argv);
 int						count_cmd_list(t_cmd *cmds);
 int						append_arg_to_cmd(t_cmd *cmd, char *arg);
+int						is_delim(char c);
 int						token_should_expand(const char *token);
 void					mark_non_pipeline_skips(t_cmd *cmds);
 void					append_or_start_cmd_ctx(t_parse_ctx *c, int *argc,
@@ -249,6 +272,10 @@ void					handle_heredoc(t_cmd *cmd, t_shell *shell);
 int						apply_redirections(t_cmd *cmd);
 void					restore_redirections(int save_in, int save_out);
 void					preprocess_heredocs(t_cmd *cmds, t_shell *shell);
+void					apply_parent_out(t_cmd *cmd, int *ok);
+void					apply_parent_in(t_cmd *cmd, int *ok);
+
+/* Error helpers */
 int						apply_redirs_parent(t_cmd *cmd, int *save_stdin,
 							int *save_stdout);
 void					restore_redirs_parent(int save_stdin, int save_stdout,
@@ -257,6 +284,7 @@ void					exec_command_child(t_cmd *cmd, t_shell *shell,
 							int in_pipeline);
 void					exec_search_in_path(t_cmd *cmd, t_shell *shell);
 void					exec_path_or_error(t_cmd *cmd, t_shell *shell);
+void					close_all_pipes(int n, int (*pfd)[2]);
 int						hd_process_list(t_cmd *cmd, t_shell *shell,
 							int *assigned_fd);
 int						read_heredoc_into_pipe(int wfd, const char *delim,
@@ -272,14 +300,26 @@ void					fork_children(t_exec_ctx *s, t_shell *shell);
 void					ms_perror(const char *subject);
 void					ms_error2(const char *subject, const char *msg);
 void					ms_syntax_error(const char *tok);
+int						count_cmds(t_cmd *cmd);
+int						alloc_exec_arrays(t_exec_ctx *s);
 
 /* Terminal mode helpers */
 void					configure_terminal(void);
 void					restore_terminal(void);
 
+/* Terminal state (termios) */
+typedef struct s_term_state
+{
+	struct termios		orig;
+	int					saved;
+}						t_term_state;
+
 /* IO helpers */
 char					*ms_read_line_fd(int fd);
+void					apply_out_redirs(t_cmd *cmd);
+void					apply_in_redirs(t_cmd *cmd, t_shell *shell);
 void					free_split(char **p);
+int						should_print_bpipe(t_exec_ctx *s, int idx);
 
 /* noop: mantenido por compatibilidad de includes */
 

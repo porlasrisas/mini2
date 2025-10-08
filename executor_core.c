@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 13:25:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 19:50:20 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 18:32:17 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,15 @@ static void	close_all_pipes(int n, int (*pfd)[2])
 	while (j < n - 1)
 	{
 		if (pfd[j][0] >= 0)
+		{
 			close(pfd[j][0]);
+			pfd[j][0] = -1;
+		}
 		if (pfd[j][1] >= 0)
+		{
 			close(pfd[j][1]);
+			pfd[j][1] = -1;
+		}
 		j++;
 	}
 }
@@ -42,8 +48,16 @@ static int	setup_pipes(t_exec_ctx *s)
 			ms_perror("pipe");
 			while (i-- > 0)
 			{
-				close(s->pfd[i][0]);
-				close(s->pfd[i][1]);
+				if (s->pfd[i][0] >= 0)
+				{
+					close(s->pfd[i][0]);
+					s->pfd[i][0] = -1;
+				}
+				if (s->pfd[i][1] >= 0)
+				{
+					close(s->pfd[i][1]);
+					s->pfd[i][1] = -1;
+				}
 			}
 			return (0);
 		}
@@ -54,19 +68,28 @@ static int	setup_pipes(t_exec_ctx *s)
 
 static void	wait_others(t_exec_ctx *s)
 {
+	int	printed;
+
+	printed = 0;
 	s->k = 0;
 	while (s->k < s->n - 1)
 	{
 		if (s->pids[s->k] > 0)
+		{
 			waitpid(s->pids[s->k], &s->status, 0);
+			if (!printed && WIFSIGNALED(s->status)
+				&& WTERMSIG(s->status) == SIGPIPE)
+			{
+				ft_putstr_fd(" Broken pipe\n", 2);
+				printed = 1;
+			}
+		}
 		s->k++;
 	}
 }
 
 static int	wait_and_finalize(t_exec_ctx *s, t_shell *shell)
 {
-	if (s->n > 1)
-		close_all_pipes(s->n, s->pfd);
 	if (s->pids[s->n - 1] > 0)
 		waitpid(s->pids[s->n - 1], &s->last_status, 0);
 	wait_others(s);
@@ -96,6 +119,8 @@ int	executor_run(t_cmd *cmds, t_shell *shell)
 		return (1);
 	}
 	fork_children(&s, shell);
+	if (s.n > 1)
+		close_all_pipes(s.n, s.pfd);
 	res = wait_and_finalize(&s, shell);
 	free(s.pids);
 	free(s.pfd);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_core.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 14:05:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 18:13:24 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 18:18:42 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,19 @@ int	append_arg_to_cmd(t_cmd *cmd, char *arg)
 static void	start_first_cmd(t_parse_ctx *c, int *argc, char ***argv,
 		char *processed)
 {
+	int	k;
+
 	(*argv)[(*argc)++] = processed;
 	(*argv)[*argc] = NULL;
 	*c->cmds = add_cmd(*c->cmds, *argv);
+	{
+		k = 0;
+		while (k < *argc)
+		{
+			free((*argv)[k]);
+			k++;
+		}
+	}
 	free(*argv);
 	*c->current_cmd = *c->cmds;
 	while (*c->current_cmd && (*c->current_cmd)->next)

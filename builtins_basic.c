@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   builtin_echo.c                                     :+:      :+:    :+:   */
+/*   builtins_basic.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/25 23:00:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/09/29 22:00:44 by Guille           ###   ########.fr       */
+/*   Created: 2025/10/07 21:00:00 by guigonza          #+#    #+#             */
+/*   Updated: 2025/10/08 14:06:05 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,4 +50,37 @@ int	builtin_echo(char **argv)
 	if (do_newline)
 		ft_putchar_fd('\n', 1);
 	return (0);
+}
+
+int	builtin_env(char **envp)
+{
+	int	i;
+
+	i = 0;
+	while (envp[i])
+	{
+		ft_putendl_fd(envp[i], 1);
+		i++;
+	}
+	return (0);
+}
+
+int	builtin_pwd(void)
+{
+	char	cwd[1024];
+
+	if (getcwd(cwd, sizeof(cwd)))
+	{
+		ft_putendl_fd(cwd, 1);
+		return (0);
+	}
+	ft_putstr_fd("minishell: pwd: ", 2);
+	perror("");
+	return (1);
+}
+
+int	should_skip_single(t_cmd *cmd)
+{
+	return (cmd->skip_execution || (cmd->redir.has_redir_in
+			&& cmd->redir.in_fd == -1));
 }

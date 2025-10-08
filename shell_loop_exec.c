@@ -3,31 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   shell_loop_exec.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/07 17:40:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 17:41:02 by Guille           ###   ########.fr       */
+/*   Created: 2025/10/08 14:20:30 by guigonza          #+#    #+#             */
+/*   Updated: 2025/10/08 19:07:18 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
-#include <unistd.h>
-
-int	is_blank_str(const char *s)
-{
-	int	i;
-
-	i = 0;
-	while (s && (s[i] == ' ' || s[i] == '\t'))
-		i++;
-	return (s && s[i] == '\0');
-}
-
-int	should_skip_single(t_cmd *cmd)
-{
-	return (cmd->skip_execution || (cmd->redir.has_redir_in
-			&& cmd->redir.in_fd == -1));
-}
 
 void	exec_after_parsing(t_shell *shell, t_loop_ctx *c)
 {
@@ -57,6 +40,11 @@ void	process_line(t_shell *shell, t_loop_ctx *c)
 	shell->parser.cmds = parse_input(c->input, shell->envp, shell->last_status);
 	if (!shell->parser.cmds)
 		return (free(c->input), (void)0);
+	/* Liberamos el buffer de entrada inmediatamente tras parsear
+	 * para evitar fugas si un builtin como 'exit' termina el proceso
+	 * antes de alcanzar el free() al final de la función. */
+	free(c->input);
+	c->input = NULL;
 	if (!shell->parser.cmds->next && shell->parser.cmds->redir.has_redir_in
 		&& shell->parser.cmds->redir.in_fd == -1)
 		shell->last_status = 1;
@@ -67,12 +55,44 @@ void	process_line(t_shell *shell, t_loop_ctx *c)
 		g_signal = 0;
 		free_cmds(shell->parser.cmds);
 		shell->parser.cmds = NULL;
-		free(c->input);
-		c->input = NULL;
 		return ;
 	}
 	exec_after_parsing(shell, c);
 	free_cmds(shell->parser.cmds);
 	shell->parser.cmds = NULL;
-	free(c->input);
+}
+
+static void	init_shell_defaults(t_shell *shell)
+{
+	shell->in_heredoc = 0;
+	shell->parser.input = NULL;
+	shell->parser.cmds = NULL;
+	shell->parser.pipe_count = 0;
+	shell->last_status = 0;
+}
+
+void	init_shell_state(t_shell *shell, struct sigaction *sa_pipe,
+		t_loop_ctx *c, char **envp)
+{
+	c->save_in = -1;
+	c->save_out = -1;
+	shell->envp = env_dup(envp);
+	init_shell_defaults(shell);
+	sa_pipe->sa_handler = SIG_IGN;
+	sigemptyset(&sa_pipe->sa_mask);
+	sa_pipe->sa_flags = 0;
+	sigaction(SIGPIPE, sa_pipe, NULL);
+	setup_signals();
+	configure_terminal();
+}
+
+int	handle_blank_input(t_loop_ctx *c)
+{
+	if (is_blank_str(c->input) && isatty(STDIN_FILENO))
+	{
+		free(c->input);
+		c->input = NULL;
+		return (1);
+	}
+	return (0);
 }

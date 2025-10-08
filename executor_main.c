@@ -1,52 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   executor_child.c                                   :+:      :+:    :+:   */
+/*   executor_main.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/30 12:32:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 19:49:03 by guigonza         ###   ########.fr       */
+/*   Created: 2025/10/07 21:45:00 by guigonza          #+#    #+#             */
+/*   Updated: 2025/10/08 17:39:29 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
-
-static void	apply_out_redirs(t_cmd *cmd)
-{
-	if (cmd->redir.out_fd > 0)
-	{
-		if (dup2(cmd->redir.out_fd, STDOUT_FILENO) == -1)
-			_exit(1);
-		close(cmd->redir.out_fd);
-	}
-	if (cmd->redir.append_fd > 0)
-	{
-		if (dup2(cmd->redir.append_fd, STDOUT_FILENO) == -1)
-			_exit(1);
-		close(cmd->redir.append_fd);
-	}
-}
-
-static void	apply_in_redirs(t_cmd *cmd, t_shell *shell)
-{
-	if (cmd->redir.heredoc_fd == -2)
-		handle_heredoc(cmd, shell);
-	if (cmd->redir.has_redir_in && cmd->redir.in_fd == -1)
-		_exit(1);
-	if (cmd->redir.in_fd > 0)
-	{
-		if (dup2(cmd->redir.in_fd, STDIN_FILENO) == -1)
-			_exit(1);
-		close(cmd->redir.in_fd);
-	}
-	if (cmd->redir.heredoc_fd >= 0)
-	{
-		if (dup2(cmd->redir.heredoc_fd, STDIN_FILENO) == -1)
-			_exit(1);
-		close(cmd->redir.heredoc_fd);
-	}
-}
 
 static void	apply_redirs_child(t_cmd *cmd, t_shell *shell)
 {
@@ -95,4 +59,57 @@ void	exec_command_child(t_cmd *cmd, t_shell *shell, int in_pipeline)
 		exec_path_or_error(cmd, shell);
 	else
 		exec_search_in_path(cmd, shell);
+}
+
+int	executor_run(t_cmd *cmds, t_shell *shell)
+{
+	t_exec_ctx	s;
+	int			res;
+
+	res = init_ctx(&s, cmds);
+	if (res <= 0)
+		return (res < 0);
+	if (!setup_pipes(&s))
+	{
+		free(s.pids);
+		free(s.pfd);
+		free(s.cmd_arr);
+		return (1);
+	}
+	fork_children(&s, shell);
+	if (s.n > 1)
+		close_all_pipes(s.n, s.pfd);
+	res = wait_and_finalize(&s, shell);
+	free(s.pids);
+	free(s.pfd);
+	free(s.cmd_arr);
+	return (res);
+}
+
+void	fork_children(t_exec_ctx *s, t_shell *shell)
+{
+	s->ign.sa_handler = SIG_IGN;
+	sigemptyset(&s->ign.sa_mask);
+	s->ign.sa_flags = 0;
+	sigaction(SIGINT, &s->ign, &s->old_int);
+	s->i = s->n - 1;
+	while (s->i >= 0)
+	{
+		s->node = s->cmd_arr[s->i];
+		s->pids[s->i] = fork();
+		if (s->pids[s->i] == -1)
+			s->pids[s->i] = -1;
+		else if (s->pids[s->i] == 0)
+		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
+			signal(SIGPIPE, SIG_DFL);
+			dup_io_for_child(s);
+			exec_command_child(s->node, shell, (s->n > 1));
+			_exit(1);
+		}
+		else
+			close_unused_fds(s);
+		s->i--;
+	}
 }

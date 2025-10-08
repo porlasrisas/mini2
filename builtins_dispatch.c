@@ -53,6 +53,7 @@ static void	perform_exit_and_quit(t_shell *shell, t_cmd *cmd, int save_in,
 	if (isatty(STDIN_FILENO))
 		ft_putstr_fd("exit\n", 1);
 	restore_terminal();
+	free_env(shell->envp);
 	exit(exit_code);
 }
 

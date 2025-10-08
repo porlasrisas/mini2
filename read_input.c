@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   read_input.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 11:18:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 17:13:01 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 18:35:47 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,4 +43,23 @@ char	*read_input(t_shell *shell)
 	if (isatty(STDIN_FILENO))
 		return (read_input_tty(shell));
 	return (read_input_non_tty());
+}
+
+int	should_print_bpipe(t_exec_ctx *s, int idx)
+{
+	t_cmd	*writer;
+	t_cmd	*next;
+
+	if (s->n != 2)
+		return (0);
+	if (!(WIFSIGNALED(s->status) && WTERMSIG(s->status) == SIGPIPE))
+		return (0);
+	writer = s->cmd_arr[idx];
+	next = s->cmd_arr[idx + 1];
+	if (!writer || writer->is_builtin)
+		return (0);
+	if (next && (next->redir.has_redir_in || next->redir.in_fd > 0
+			|| next->redir.heredoc_fd >= 0 || next->redir.heredoc_fd == -2))
+		return (0);
+	return (1);
 }

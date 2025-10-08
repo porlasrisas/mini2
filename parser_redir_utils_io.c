@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redir_utils_io.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 23:05:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 20:13:55 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 18:16:19 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,24 @@
 
 void	attach_new_cmd_if_needed(t_parse_ctx *c, int *argc, char ***argv)
 {
+	int	k;
+
 	if (!*c->current_cmd)
 	{
 		(*argv)[*argc] = NULL;
 		*c->cmds = add_cmd(*c->cmds, *argv);
+		k = 0;
+		while (k < *argc)
+		{
+			free((*argv)[k]);
+			k++;
+		}
+		free(*argv);
 		*c->current_cmd = *c->cmds;
 		while (*c->current_cmd && (*c->current_cmd)->next)
 			*c->current_cmd = (*c->current_cmd)->next;
+		*argc = 0;
+		*argv = (char **)malloc(sizeof(char *) * (MAX_TOKENS + 1));
 	}
 }
 

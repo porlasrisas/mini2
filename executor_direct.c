@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 13:42:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 20:22:08 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 18:30:30 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,4 +71,25 @@ void	free_split(char **p)
 	while (p && p[i])
 		free(p[i++]);
 	free(p);
+}
+
+void	close_all_pipes(int n, int (*pfd)[2])
+{
+	int	j;
+
+	j = 0;
+	while (j < n - 1)
+	{
+		if (pfd[j][0] >= 0)
+		{
+			close(pfd[j][0]);
+			pfd[j][0] = -1;
+		}
+		if (pfd[j][1] >= 0)
+		{
+			close(pfd[j][1]);
+			pfd[j][1] = -1;
+		}
+		j++;
+	}
 }

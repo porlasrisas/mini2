@@ -3,18 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parser_build.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Guille <Guille@student.42.fr>              +#+  +:+       +#+        */
+/*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 14:20:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/01 18:16:04 by Guille           ###   ########.fr       */
+/*   Updated: 2025/10/08 19:17:19 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
-
-/* Declaraciones de helpers movidos a otro fichero */
-int				parse_main_loop(t_parse_ctx *c, int *argc, char ***argv,
-					char **envp);
 
 static t_cmd	*finalize_after_loop(t_parse_ctx *c, int argc, char **argv)
 {
@@ -24,12 +20,15 @@ static t_cmd	*finalize_after_loop(t_parse_ctx *c, int argc, char **argv)
 	if (argv)
 	{
 		argv[argc] = NULL;
-		if (!cmds && argc > 0)
+		if (argc > 0)
+		{
 			cmds = add_cmd(cmds, argv);
-		else if (!cmds)
+			free_split(argv);
+		}
+		else
+		{
 			free(argv);
-		else if (argc > 0)
-			cmds = add_cmd(cmds, argv);
+		}
 	}
 	if (count_cmd_list(cmds) <= 1)
 		mark_non_pipeline_skips(cmds);
@@ -58,8 +57,28 @@ t_cmd	*parse_build(char *input, char **envp, int last_status)
 	c.last_status = last_status;
 	if (!parse_main_loop(&c, &tmp[0], &argv, envp))
 	{
+		free_split(argv);
 		return (NULL);
 	}
 	head = finalize_after_loop(&c, tmp[0], argv);
 	return (head);
+}
+
+int	read_var_end(const char *token, int i)
+{
+	int	end;
+
+	end = i + 1;
+	while (token[end] && (ft_isalnum(token[end]) || token[end] == '_'))
+		end++;
+	return (end);
+}
+
+void	expand_status(t_expand_ctx *ctx)
+{
+	int	k;
+
+	k = 0;
+	while ((size_t)k < ctx->status_len)
+		ctx->dst[ctx->j++] = ctx->status_str[k++];
 }

@@ -6,7 +6,7 @@
 /*   By: guigonza <guigonza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/07 16:40:00 by Guille            #+#    #+#             */
-/*   Updated: 2025/10/07 18:53:32 by guigonza         ###   ########.fr       */
+/*   Updated: 2025/10/08 14:06:05 by guigonza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,4 +54,9 @@ int	builtin_cd(char **argv, t_shell *shell)
 	if (argv[1] && ft_strncmp(argv[1], "-", 2) == 0)
 		ft_putendl_fd(cwd, 1);
 	return (0);
+}
+
+int	is_delim(char c)
+{
+	return (c == ' ' || c == '\t' || c == '|' || c == '<' || c == '>');
 }
